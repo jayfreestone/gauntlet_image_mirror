@@ -1,0 +1,11 @@
+{
+  "name": "GauntletImageMirror",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Jay Freestone <mail@jayfreestone.com>",
+  "license": "MIT",
+  "dependencies": {
+    "aws-sdk": "^2.45.0",
+    "mime": "^1.3.4"
+  }
+}
