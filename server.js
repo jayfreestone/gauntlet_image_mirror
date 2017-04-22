@@ -1,7 +1,7 @@
 const http = require('http');
 
 // Listen on a specific host via the HOST environment variable
-var host = process.env.HOST || '0.0.0.0';
+// var host = process.env.HOST || '0.0.0.0';
 // Listen on a specific port via the PORT environment variable
 var port = process.env.PORT || 8080;
 
@@ -50,7 +50,7 @@ const requestHandler = (request, response) => {
 
 const server = http.createServer(requestHandler);
 
-server.listen(port, host, (err) => {
+server.listen(port, (err) => {
   if (err) {
     return console.log('something bad happened', err)
   }
