@@ -4,7 +4,7 @@ const port = 3001;
 const fs = require('fs');
 const mime = require('mime');
 const AWS = require('aws-sdk');
-AWS.config.loadFromPath('./config.json');
+// AWS.config.loadFromPath('./config.json');
 
 const s3Bucket = new AWS.S3({params: {Bucket: 'gauntlet-images'}});
 
