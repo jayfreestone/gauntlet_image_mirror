@@ -2,4 +2,6 @@ node_modules/
 .idea/
 tags
 config.json
-tmp/{*.jpg}
+tmp/*.jpg
+tmp/*.png
+tmp/*.gif
