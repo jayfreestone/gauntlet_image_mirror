@@ -61,9 +61,17 @@ const requestHandler = (request, response) => {
       // Try and upload the image to S3
       s3Bucket.upload(param_data, (err, output_data) => {
         if (err) {
-          console.log('Error uploading data to S3: ' + err);
+          response.writeHead(500, { "Content-Type": "application/json" });
+          response.end(JSON.stringify({
+            message: `Error uploading to S3`,
+            url: null,
+          }));
         } else {
-          response.end(`We mirrored it: ${output_data.Location}`);
+          response.writeHead(200, { "Content-Type": "application/json" });
+          response.end(JSON.stringify({
+            message: `We mirrored it: ${output_data.Location}`,
+            url: `We mirrored it: ${output_data.Location}`,
+          }));
         }
       });
     });
