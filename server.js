@@ -70,7 +70,7 @@ const requestHandler = (request, response) => {
           response.writeHead(200, { "Content-Type": "application/json" });
           response.end(JSON.stringify({
             message: `We mirrored it: ${output_data.Location}`,
-            url: `We mirrored it: ${output_data.Location}`,
+            url: `${output_data.Location}`,
           }));
         }
       });
