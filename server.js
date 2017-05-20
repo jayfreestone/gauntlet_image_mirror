@@ -20,11 +20,14 @@ function download(url, dest, cb) {
   });
 }
 
+function extractDomain(url) {
+  const matches = url.match(/^https?\:\/\/([^\/?#]+)(?:[\/?#]|$)/i);
+  return matches && matches[1];
+}
+
 // Checks if a domain passes
 function isValidDomain(url) {
-  const matches = url.match(/^https?\:\/\/([^\/?#]+)(?:[\/?#]|$)/i);
-  const domain = matches && matches[1];
-  return domain === 'i.4cdn.org';
+  return extractDomain(url) === 'i.4cdn.org';
 }
 
 // Use a (local, ignored) config file if present
@@ -75,9 +78,11 @@ const requestHandler = (request, response) => {
             }));
           } else {
             response.writeHead(200, { "Content-Type": "application/json" });
+            console.log(JSON.stringify(output_data));
             response.end(JSON.stringify({
               message: `We mirrored it: ${output_data.Location}`,
               url: `${output_data.Location}`,
+              img_root: `https://${extractDomain(output_data.Location)}/${image_folder}/`,
             }));
           }
         });
