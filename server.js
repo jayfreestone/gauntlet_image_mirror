@@ -2,6 +2,8 @@ const http = require('http');
 const fs = require('fs');
 const mime = require('mime');
 const AWS = require('aws-sdk');
+const bodyParser = require('body-parser');
+const jsonParser = bodyParser.json();
 
 // Listen on a specific port via the PORT environment variable
 const port = process.env.PORT || 8080;
@@ -41,43 +43,47 @@ const requestHandler = (request, response) => {
   const image_path = `./tmp/${image_file}`;
   const mimeType = mime.lookup(image_path);
 
-  // Ignore favicons
-  if (isValidDomain(image_url) && mimeType !== 'image/x-icon') {
-    // Check if we already have the file...
-    s3Bucket.headObject({ Key: image_file }).on('success', () => {
-      // Abort if we've already mirrored it
-      response.end('Already mirrored.');
-    }).send();
+  jsonParser(request, response, () => {
+    console.log(request.body.url);
 
-    // ...otherwise start the download
-    download(image_url, image_path, () => {
-      // Set up the params for S3
-      const param_data = {
-        Key: image_file,
-        Body: fs.readFileSync(image_path),
-        ContentType: mimeType,
-      };
+    // Ignore favicons
+    if (isValidDomain(image_url) && mimeType !== 'image/x-icon') {
+      // Check if we already have the file...
+      s3Bucket.headObject({ Key: image_file }).on('success', () => {
+        // Abort if we've already mirrored it
+        response.end('Already mirrored.');
+      }).send();
 
-      // Try and upload the image to S3
-      s3Bucket.upload(param_data, (err, output_data) => {
-        if (err) {
-          response.writeHead(500, { "Content-Type": "application/json" });
-          response.end(JSON.stringify({
-            message: `Error uploading to S3`,
-            url: null,
-          }));
-        } else {
-          response.writeHead(200, { "Content-Type": "application/json" });
-          response.end(JSON.stringify({
-            message: `We mirrored it: ${output_data.Location}`,
-            url: `${output_data.Location}`,
-          }));
-        }
+      // ...otherwise start the download
+      download(image_url, image_path, () => {
+        // Set up the params for S3
+        const param_data = {
+          Key: image_file,
+          Body: fs.readFileSync(image_path),
+          ContentType: mimeType,
+        };
+
+        // Try and upload the image to S3
+        s3Bucket.upload(param_data, (err, output_data) => {
+          if (err) {
+            response.writeHead(500, { "Content-Type": "application/json" });
+            response.end(JSON.stringify({
+              message: `Error uploading to S3`,
+              url: null,
+            }));
+          } else {
+            response.writeHead(200, { "Content-Type": "application/json" });
+            response.end(JSON.stringify({
+              message: `We mirrored it: ${output_data.Location}`,
+              url: `${output_data.Location}`,
+            }));
+          }
+        });
       });
-    });
-  } else {
-    response.end('Something went wrong.');
-  }
+    } else {
+      response.end('Something went wrong.');
+    }
+  });
 };
 
 const server = http.createServer(requestHandler);
