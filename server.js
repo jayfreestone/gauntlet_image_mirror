@@ -38,18 +38,20 @@ const s3Bucket = new AWS.S3({params: {Bucket: 'gauntlet-images'}});
 
 // Set up the request handler
 const requestHandler = (request, response) => {
-  const image_url = request.url.slice(1);
-  const image_file = image_url.substring(image_url.lastIndexOf('/') + 1);
-  const image_path = `./tmp/${image_file}`;
-  const mimeType = mime.lookup(image_path);
+  if (request.method !== 'POST') return;
 
   jsonParser(request, response, () => {
-    console.log(request.body.url);
+    const image_url = request.body.url;
+    const image_folder = request.body.folder || '';
+    const image_file = image_url.substring(image_url.lastIndexOf('/') + 1);
+    const image_key = `${image_folder}/${image_file}`;
+    const image_path = `./tmp/${image_file}`;
+    const mimeType = mime.lookup(image_path);
 
     // Ignore favicons
     if (isValidDomain(image_url) && mimeType !== 'image/x-icon') {
       // Check if we already have the file...
-      s3Bucket.headObject({ Key: image_file }).on('success', () => {
+      s3Bucket.headObject({ Key: image_key }).on('success', () => {
         // Abort if we've already mirrored it
         response.end('Already mirrored.');
       }).send();
@@ -58,7 +60,7 @@ const requestHandler = (request, response) => {
       download(image_url, image_path, () => {
         // Set up the params for S3
         const param_data = {
-          Key: image_file,
+          Key: image_key,
           Body: fs.readFileSync(image_path),
           ContentType: mimeType,
         };
